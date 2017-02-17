@@ -1,20 +1,44 @@
+var input = process.argv[2];
+var value = process.argv[3];
+var request = require("request");
+
+//code below grabs the data from keys.js
+var keys = require('./keys.js');
+// console.log(keys.twitterKeys);
+
 //Twitter NPM
 // npm install twitter
 var Twitter = require('twitter');
 
-var client = new Twitter({
-    consumer_key: '',
-    consumer_secret: '',
-    access_token_key: '',
-    access_token_secret: ''
-});
+//store data from keys.js in the variable client
+var client = new Twitter(keys.twitterKeys);
+// console.log(client);
+var params = { screen_name: 'elle_sait_' } && {
+    count: 2
+};
 
-var params = { screen_name: 'nodejs' };
-client.get('statuses/user_timeline', params, function(error, tweets, response) {
-    if (!error) {
-        console.log(tweets);
-    }
-});
+function myTwitter() {
+    client.get('statuses/user_timeline', params, function(error, tweets, response) {
+        if (!error && response.statusCode == 200) {
+            // if (err) throw err;
+        }
+        for (i = 0; i < tweets.length; i++) {
+            // var number = i + 1;
+            console.log(tweets[i].text);
+        }
+    });
+}
+//use the if statements to call the function as argument values in the command line. Will NOT work without this!!!
+if (input == "myTwitter") {
+    myTwitter();
+} else if (input == "spotifySong") {
+    spotifySong(value);
+
+} else if (input == "movieThis") {
+    movieThis(value);
+};
+
+
 
 //Spotify NPM
 // npm install spotify
@@ -25,19 +49,57 @@ client.get('statuses/user_timeline', params, function(error, tweets, response) {
 
 var spotify = require('spotify');
 
-spotify.search({ type: 'track', query: 'dancing in the moonlight' }, function(err, data) {
-    if (err) {
-        console.log('Error occurred: ' + err);
-        return;
-    }
+// function spotifySong(value) {
+// spotify.search({ type: 'track', query: "" }, function(err, data) {
+//     if (err) {
+//         console.log('Error occurred: ' + err);
+//         return;
+//     }
+//     console.log(data);
+// });
+// }
 
-    // Do something with 'data' 
-});
+function spotifySong(value) {
+    if (value == null) {
+        value = 'blank space';
+    }
+    request('https://api.spotify.com/v1/search?q=' + value + '&type=track', function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+            jsonBody = JSON.parse(body);
+            console.log(' ');
+            console.log('Artist: ' + jsonBody.tracks.items[0].artists[0].name);
+            console.log('Song: ' + jsonBody.tracks.items[0].name);
+            console.log('Preview Link: ' + jsonBody.tracks.items[0].preview_url);
+            console.log('Album: ' + jsonBody.tracks.items[0].album.name);
+            console.log(' ');
+        }
+    });
+}
 
 //Request NPM
-var request = require('request');
-request('http://www.google.com', function(error, response, body) {
-    if (!error && response.statusCode == 200) {
-        console.log(body) // Show the HTML for the Google homepage. 
-    }
-})
+// Request to grab data from the [OMDB API](http://www.omdbapi.com)
+
+
+function movieThis(value) {
+    // if (value == null) {
+    //     value = "Remember the Titans";
+    // }
+    request("http://www.omdbapi.com/?t=" + value + "&y=&plot=short&r=json&tomatoes=true",
+        function(error, response, body) {
+            // If the request is successful
+            if (!error && response.statusCode === 200) {
+
+                // Parse the body of the site and recover specific information
+                console.log("Title: " + JSON.parse(body).Title +
+                    "\nRelease Year: " + JSON.parse(body).Year +
+                    "\nRated: " + JSON.parse(body).Rated +
+                    "\nimdbRating: " + JSON.parse(body).imdbRating +
+                    "\nCountry where produced: " + JSON.parse(body).Country +
+                    "\nLanguage: " + JSON.parse(body).Language +
+                    "\nPlot: " + JSON.parse(body).Plot +
+                    "\nActors: " + JSON.parse(body).Actors +
+                    "\nRotten Tomatoes Rating: " + JSON.parse(body).tomatoRating +
+                    "\nRotten Tomatoes URL: " + JSON.parse(body).tomatoURL);
+            }
+        });
+};
