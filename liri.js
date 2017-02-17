@@ -14,7 +14,7 @@ var Twitter = require('twitter');
 var client = new Twitter(keys.twitterKeys);
 // console.log(client);
 var params = { screen_name: 'elle_sait_' } && {
-    count: 2
+    count: 5
 };
 
 function myTwitter() {
@@ -28,7 +28,7 @@ function myTwitter() {
         }
     });
 }
-//use the if statements to call the function as argument values in the command line. Will NOT work without this!!!
+
 if (input == "myTwitter") {
     myTwitter();
 } else if (input == "spotifySong") {
@@ -36,7 +36,9 @@ if (input == "myTwitter") {
 
 } else if (input == "movieThis") {
     movieThis(value);
-};
+} else if (input == "random") {
+    random();
+}
 
 
 
@@ -103,3 +105,16 @@ function movieThis(value) {
             }
         });
 };
+var fs = require("fs");
+function random() {
+    fs.readFile('random.txt', 'utf8', function(error, data) {
+        if (error) {
+            console.log(error);
+        } else {
+            var dataArr = data.split(',');
+            if (dataArr[0] === 'spotify-this-song') {
+                spotifySong(dataArr[1]);
+            }
+        }
+    });
+}
